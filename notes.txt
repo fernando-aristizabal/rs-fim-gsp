@@ -1,0 +1,19 @@
+
+## Research ##
+Make large area FIM (whole tile?)
+Texas study area?
+
+## Figures and Tables ##
+Plot everything and finalize figures
+
+## Graph Signals ##
+Study filtering
+Different filters?
+
+## Physics ##
+Add weight matrix based on drainage areas.
+How does this agree with physics? How does this manage confluences and divergences?
+
+
+## Publication ##
+Decide on journal
