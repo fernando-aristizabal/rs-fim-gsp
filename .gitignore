@@ -1,3 +1,10 @@
 lit
 manuscripts/figures
 manuscripts/igarss21/abstract/template/Template.pdf
+*.log
+*.blg
+*.bbl
+*.log
+*.aux
+aristizabal.pdf
+
