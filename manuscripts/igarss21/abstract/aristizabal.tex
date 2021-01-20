@@ -57,7 +57,28 @@ flood inundation mapping, remote sensing, synthetic aperture radar, unsupervised
 \section{Introduction}
 \label{sec:intro}
 
+Floods represent one of the most significant natural disasters \cite{national_weather_service_2020,national_weather_service_2019,national_weather_service_2018,us_department_of_commerce_2020} with trends indicating that impacts will only continue to increase in the future \cite{mallakpour2015changing,downton2005reanalysis,kunkel1999temporal,pielke2000precipitation,corringham2019effect,tabari2020climate,milly2002increasing,wing2018estimates}. 
+While the United States Geological Survey (USGS) operates a network of thousands stream gages across the United States, it still leaves considerable amount of data scarcity particularly along lower order streams as illustrated in Figure \ref{fig:histogram_gages} which compares the distribution of stream orders for gaged and ungaged stream reaches within the National Hydrography Dataset (NHD) Version 2.
+Having more and improved data via remote sensing related to river discharge, stage, and inundation extents could provide key stakeholders with more robust means of forecasting, preparing for, and responding to floods in data scare regions around the world.
+A variety of satellite based sensors have been used in the detection of surface water including multi-spectral \cite{nigro2014nasa,sanyal2004application,wang2004using,brakenridge2006modis,jain2005delineation,nghiem2000flood,hussain2011mapping,frazier2000water,dewan2006flood,brivio2002integration}, microwave \cite{de2015global,schumann2015microwave,de2010flood,bindlish2008role,de2009global,kundu2015flood}, and synthetic aperture radar (SAR) \cite{aristizabal2020high,shastry2019using,martinis2010automatic,kudahetty2012flood,schlaffer2015flood,chini2019sentinel,chaabani2018flood,huang2018automated,saatchi2019sar,kasischke2003effects,hess2003dual}.
+These previous studies also noted limitations with their respective sensors such as interference from clouds, vegetative, and anthropogenic features; radiance distortion from shadows or water color variability; and a dependency of sunlight for multi-spectral sensors.
+For active and passive microwave sensors, spatial resolution is limited to typically kilometer scales making detection of flood intelligence moot.
+While SAR does have its own inherent limitations such as terrain distortions and interference with vegetation and anthopogenic features, it boasts a significant number of strengths for detection of riverine surface water including high spatial resolution, self-illumination, and low atmospheric attenuation \cite{saatchi2019sar,muckenhuber2016open}.
+To counter limitations of remote sensing of flooding, researchers have employed terrain information in the form of digital elevation models (DEM) and detrended DEMs \cite{townsend1998modeling,aristizabal2020high,shastry2019using}
 
+\begin{figure}[htb]
+
+\begin{minipage}[b]{1.0\linewidth}
+  \centering
+ \centerline{\epsfig{figure=figures/histogram_of_usgs_gages_by_order.jpg,width=8.5cm}}
+%  \vspace{2.0cm}
+%  \centerline{(a) Result 1}\medskip
+\end{minipage}
+
+\caption{Histogram of stream segments in National Hydrography Dataset Version 2 grouped by stream order and whether it has a United States Geological Survey stream gage or not. Considerable amount of lower order streams are ungaged.}
+\label{fig:histogram_gages}
+%
+\end{figure}
 
 \section{Materials and Methods}
 \label{sec:materials_and_methods}
@@ -102,7 +123,7 @@ Results and Discussion
 
 
 \section{Conclusions}
-Conclusions \cite{Lamp86,C2}.
+Conclusions
 \label{sec:conclusions}
 
 %\subsection{Subheadings}
