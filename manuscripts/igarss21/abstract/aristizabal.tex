@@ -12,7 +12,7 @@
 
 % Title.
 % ------
-\title{Riverine Flood Inundation Mapping with Graph Signal Filtering of Stages Determined from Unsupervised Clustering of Synthetic Aperture Radar Imagery}
+\title{Mapping Riverine Inundation Extents with Graph Signal Filtering of River Depths Determined from Unsupervised Clustering of Synthetic Aperture Radar Imagery}
 %
 % Single address.
 % ---------------
@@ -101,10 +101,28 @@ A graphical representation of this procedure is demonstrated in Figure \ref{fig:
 
 \end{figure}
 
+\subsection{Validation}
+\label{ssec:validation}
+
+
+
 \subsection{Image Segmentation}
 \label{ssec:image_segmentation}
 
-Traditionally, one of the common techniques for SAR based surface water segmentation leverages 
+Sentinel-1 C-Band SAR data, captured on October 12, 2016, is used in the interferometric wide mode offering vertical-vertical (VV) and vertical-horizontal (VH) polarizations \cite{copernicus2016sentinel} \footnote{S1A\_IW\_GRDH\_1SDV\_20161012T111514\_20161012T111543\_013456\_01580C\_1783\.SAFE}. 
+Due to SAR's bi-modal distribution, the image is initially segmented via Gaussian Mixture Models (GMM) which assumes there are two components of data each parameterized as Gaussian densities \cite{reynolds2009gaussian,mclachlan2004finite}.
+The GMM parameter set comprised of the mean vector, weight vector, and covariance matrix, are learned with the Expectation-Maximization (EM) algorithm. 
+EM initializes the parameters randomly or with K-means clusters then uses the probability of membership for each data point to each cluster to derive updated parameters \cite{barazandeh2018behavior,dempster1977maximum}. 
+Repeating the process until the log-likelihood of the Gaussian Mixtures converges within some finite tolerance effectively maximizing the local likelihood \cite{barazandeh2018behavior,dempster1977maximum}.
+
+\subsection{Stage Extraction}
+\label{ssec:stage_extraction}
+
+\subsection{Stage Filtering}
+\label{ssec:stage_filtering}
+
+\subsection{HAND Mapping}
+\label{ssec:hand_mapping}
 
 \section{Results and Discussion}
 \label{sec:results_and_discussion}
