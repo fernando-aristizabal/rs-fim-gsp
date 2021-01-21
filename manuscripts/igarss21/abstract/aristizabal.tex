@@ -104,25 +104,47 @@ A graphical representation of this procedure is demonstrated in Figure \ref{fig:
 \subsection{Validation}
 \label{ssec:validation}
 
-
+The USGS published flood inundation extents for a flood of record taking place during the Hurricane Matthew event on October 2016 in North Carolina, United States. 
+In the city of Goldsboro, a water surface manifold created from surveyed high-water marks was intersected with high resolution Lidar-based DEMs to create local flood inundation maps (FIM) \cite{musser2017characterization}.
+The map for this event was selected as validation for our proposed approach while common binary classification statistics such as precision, recall, f1-score, and Matthew's correlation coefficient (MCC) \cite{canbek2017binary,chicco2020advantages,matthews1975comparison,baldi2000assessing} were employed to compare the binary predicted and reference maps.
 
 \subsection{Image Segmentation}
 \label{ssec:image_segmentation}
 
-Sentinel-1 C-Band SAR data, captured on October 12, 2016, is used in the interferometric wide mode offering vertical-vertical (VV) and vertical-horizontal (VH) polarizations \cite{copernicus2016sentinel} \footnote{S1A\_IW\_GRDH\_1SDV\_20161012T111514\_20161012T111543\_013456\_01580C\_1783\.SAFE}. 
+Sentinel-1 C-Band SAR data, captured on October 12, 2016, is used in the interferometric wide mode offering vertical-vertical (VV) and vertical-horizontal (VH) polarizations \cite{copernicus2016sentinel} \footnote{S1A\_IW\_GRDH\_1SDV\_20161012T111514 \_20161012T111543\_013456\_01580C\_1783\.SAFE}. 
+The SAR product in the two polarizations were calibrated and filtered to remove speckle noise prior to segmentation \cite{zuhlke2015snap,yommy2015sar}. 
 Due to SAR's bi-modal distribution, the image is initially segmented via Gaussian Mixture Models (GMM) which assumes there are two components of data each parameterized as Gaussian densities \cite{reynolds2009gaussian,mclachlan2004finite}.
 The GMM parameter set comprised of the mean vector, weight vector, and covariance matrix, are learned with the Expectation-Maximization (EM) algorithm. 
-EM initializes the parameters randomly or with K-means clusters then uses the probability of membership for each data point to each cluster to derive updated parameters \cite{barazandeh2018behavior,dempster1977maximum}. 
-Repeating the process until the log-likelihood of the Gaussian Mixtures converges within some finite tolerance effectively maximizing the local likelihood \cite{barazandeh2018behavior,dempster1977maximum}.
+Our EM initializes the parameters with those from K-means clusters then uses the probability of membership for each data point to each cluster to derive updated parameters \cite{barazandeh2018behavior,dempster1977maximum}. 
+Repeating the process until the log-likelihood of the Gaussian Mixtures converges within some finite tolerance effectively maximizes the local likelihood \cite{barazandeh2018behavior,dempster1977maximum}.
+The learned parameters are then used to classify the SAR backscatter values into two distinct classes where the class with lower backscatter intensities tentatively defining the inundated class in the SAR FIM.
 
 \subsection{Stage Extraction}
 \label{ssec:stage_extraction}
 
+Height Above Nearest Drainage (HAND) is a measure of riverine drainage potentials via normalizing elevations to the nearest relevant drainage line \cite{renno2008hand,nobre2011height,nobre2016hand}. 
+Each pixel is assigned a relative elevation value and a catchment assignment referencing the river reach the pixel drains to.
+Utilizing the SAR FIM map, the maximum HAND value is extracted per catchment and assigned in equation \ref{eq:stage_extraction} 
+
+\begin{equation}
+\label{eq:stage_extraction}
+\textbf{S} = max(\textbf{H} \cap \textbf{C}_i)
+\end{equation}
+
+where S is a vector of stages, H is a vector of all the HAND values, C is a vector of all catchments, and i indexes the catchments.
+These stages are susceptible to considerable noise and demonstrate significant, irrational variations in the water surface profile. 
+
 \subsection{Stage Filtering}
 \label{ssec:stage_filtering}
 
+Graph signal processing (GSP) seeks to perform signal processing methods on signals with non-traditional graph structures \cite{gavili2017shift,defferrard2017pygsp,ortega2018graph,chen2014signal}. 
+Noisy river stages on networks are an application of GSP filtering due to the dendritic structure of river networks.
+The first eigenvalue of an A-B spline wavelet is employed as a low-pass filter to smooth and denoise the extracted stages \cite{defferrard2017pygsp}.
+
 \subsection{HAND Mapping}
 \label{ssec:hand_mapping}
+
+The filtered stages are then remapped to inundation extents with the HAND method \cite{renno2008hand,nobre2011height,nobre2016hand}.   
 
 \section{Results and Discussion}
 \label{sec:results_and_discussion}
