@@ -12,7 +12,7 @@
 
 % Title.
 % ------
-\title{Mapping Riverine Inundation Extents with Graph Signal Filtering of River Depths Determined from Unsupervised Clustering of Synthetic Aperture Radar Imagery}
+\title{Mapping Fluvial Inundation Extents with Graph Signal Filtering of River Depths Determined from Unsupervised Clustering of Synthetic Aperture Radar Imagery}
 %
 % Single address.
 % ---------------
@@ -42,21 +42,26 @@
     jasmeet@ufl.edu}
 %
 \begin{document}
+\topmargin=0mm
 %\ninept
 %
 \maketitle
 %
 \begin{abstract}
-abstract
+Remote sensing based river extent mapping can be used for detecting flooding or blue sky inundation extents in retrospective and near-realtime applications.
+Synthetic aperture radar (SAR) has been proven useful for this purpose due to its high-spatial resolution, low atmospheric attenuation, and self-illumination but suffers from radiometric scattering and unwanted reflections from vegetation, terrain, and anthropogenic features. 
+A novel four step procedure is proposed that augments a standard unsupervised classification of the SAR backscatter values with a terrain index to extract stages. 
+The extracted stages are filtered, exploiting the dendritic nature of river networks, utilizing graph signal processing then remapping the filtered stages using the hydrologically relevant terrain model. 
+Using a reference map derived from in-situ observations, the final inundation product significantly enhances the mapping skill when compared to the segmented SAR only method.
 \end{abstract}
 %
 \begin{keywords}
-flood inundation mapping, remote sensing, synthetic aperture radar, unsupervised learning, graph signal processing, height above nearest neighbor 
+flood inundation mapping, remote sensing, synthetic aperture radar, unsupervised learning, graph signal processing, Height Above Nearest Drainage
 \end{keywords}
 %
 \section{Introduction}
 \label{sec:intro}
-
+%
 Floods represent one of the most significant natural disasters \cite{national_weather_service_2020,national_weather_service_2019,national_weather_service_2018,us_department_of_commerce_2020} with trends indicating that impacts will only continue to increase in the future \cite{mallakpour2015changing,downton2005reanalysis,kunkel1999temporal,pielke2000precipitation,corringham2019effect,tabari2020climate,milly2002increasing,wing2018estimates}. 
 Modern river gage networks like those furnished by the United States Geological Survey (USGS) provide significant utility in the monitoring of river states but still leave considerable amount of data scarcity in terms of spatial sparsity and the lack of observed inundation extents. 
 Having more and improved data via remote sensing related to river discharge, stage, and inundation extents could provide key stakeholders with more robust means of forecasting, preparing for, and responding to floods in data scare regions around the world.
@@ -66,156 +71,150 @@ While SAR does have its own inherent limitations such as terrain distortions and
 To counter limitations associated with vegetative and anthropogenic interference, researchers have employed terrain information in the form of digital elevation models (DEM) and detrended DEMs \cite{townsend1998modeling,aristizabal2020high,shastry2019using,saatchi2019sar,twele2016sentinel,huang2017comparison}.
 These methods fall short of providing comprehensive solutions to operational inundation mapping with remote sensing in challenging environments.
 
-Here we propose the utilization of unsupervised learning to generate segmented images that will be used for river stage (depth) extraction. These stages are further filtered
-
-
+Here we propose the utilization of unsupervised learning to generate segmented images that will be used for river stage (depth) extraction. 
+These stages are further filtered with graph signal filtering and remapped utilizing a terrain model.
+%
 \section{Materials and Methods}
 \label{sec:materials_and_methods}
-
+%
 The proposed procedure leverages a four step process to counter some of the limitations of SAR based flood inundation mapping (FIM) including errors of omission from vegetation and anthropogenic feature interference and errors of commission including anthropogenic features that cause specular reflections or multi-bounces such as roads or dense buildings.
-The first step performs image segmentation on the SAR imagery parameterizing two modes within the data via unsupervised learning.
-The following step involves invoking the HAND method to determine the corresponding stage from segmented imagery assuming the mode with the lower backscatter as the inundated class.
-The third step takes this noisy water surface plane sampled from the segmented image and HAND data and seeks to smooth the surface via a low-pass graph signal filter utilizing the connectivity defined by the National Hydrography Dataset Version 2.
-In closing, these filtered stages are then remapped to inundation extents via the HAND method.
-
-A graphical representation of this procedure is demonstrated in Figure \ref{fig:process_flowchart}.
-
+A graphical representation of this procedure is demonstrated in Figure \ref{fig:process_flowchart} and elaborated on in sections \ref{ssec:image_segmentation}-\ref{ssec:stage_extraction_filter_mapping}.
+%
 \begin{figure}[htb]
-
-\begin{minipage}[b]{1.0\linewidth}
-  \centering
- \centerline{\epsfig{figure=figures/gsp_flow_chart.jpg,width=8.5cm}}
-\end{minipage}
-
-\caption{Flow chart detailing four step procedure for creating remote sensing based flood inundation maps with input, intermediary, and output data.}
-\label{fig:process_flowchart}
-
+    %
+    \begin{minipage}[b]{1.0\linewidth}
+        \centering
+        \centerline{\epsfig{figure=figures/gsp_flow_chart.jpg,width=8.5cm}}
+    \end{minipage}
+    %
+    \caption{Flow chart detailing four step procedure for creating remote sensing based flood inundation maps with input, intermediary, and output data.}
+    \label{fig:process_flowchart}
+    %
 \end{figure}
-
+%
 \subsection{Validation}
 \label{ssec:validation}
-
+%
 The USGS published flood inundation extents for a flood of record taking place during the Hurricane Matthew event on October 2016 in North Carolina, United States. 
-In the city of Goldsboro, a water surface manifold created from surveyed high-water marks was intersected with high resolution Lidar-based DEMs to create local flood inundation maps (FIM) \cite{musser2017characterization}.
-The map for this event was selected as validation for our proposed approach while common binary classification statistics such as precision, recall, f1-score, and Matthew's correlation coefficient (MCC) \cite{canbek2017binary,chicco2020advantages,matthews1975comparison,baldi2000assessing} were employed to compare the binary predicted and reference maps.
-
+In the city of Goldsboro, a water surface manifold created from surveyed high-water marks was intersected with high resolution Lidar-based DEMs to create a local flood inundation map (FIM) as seen in Figure \ref{fig:validation_sar_labels} \cite{musser2017characterization}.
+The map for this event was selected as validation for our proposed approach while common binary classification statistics such as precision, recall, f1-score, and Matthew's correlation coefficient (MCC) were employed to compare the binary predicted and reference maps \cite{canbek2017binary,chicco2020advantages,matthews1975comparison,baldi2000assessing}.
+%
 \subsection{Image Segmentation}
 \label{ssec:image_segmentation}
-
+%
 Sentinel-1 C-Band SAR data, captured on October 12, 2016, is used in the interferometric wide mode offering vertical-vertical (VV) and vertical-horizontal (VH) polarizations \cite{copernicus2016sentinel} \footnote{S1A\_IW\_GRDH\_1SDV\_20161012T111514 \_20161012T111543\_013456\_01580C\_1783\.SAFE}. 
-The SAR product in the two polarizations were calibrated and filtered to remove speckle noise prior to segmentation \cite{zuhlke2015snap,yommy2015sar}. 
+The SAR product in the two polarizations were calibrated and filtered to remove speckle noise prior to segmentation \cite{zuhlke2015snap,yommy2015sar} with a scatter plot of values in Figure \ref{fig:validation_sar_labels}b. 
 Due to SAR's bi-modal distribution, the image is initially segmented via Gaussian Mixture Models (GMM) which assumes there are two components of data each parameterized as Gaussian densities \cite{reynolds2009gaussian,mclachlan2004finite}.
 The GMM parameter set comprised of the mean vector, weight vector, and covariance matrix, are learned with the Expectation-Maximization (EM) algorithm. 
 Our EM initializes the parameters with those from K-means clusters then uses the probability of membership for each data point to each cluster to derive updated parameters \cite{barazandeh2018behavior,dempster1977maximum}. 
 Repeating the process until the log-likelihood of the Gaussian Mixtures converges within some finite tolerance effectively maximizes the local likelihood \cite{barazandeh2018behavior,dempster1977maximum}.
 The learned parameters are then used to classify the SAR backscatter values into two distinct classes where the class with lower backscatter intensities tentatively defining the inundated class in the SAR FIM.
-
+% 
 \begin{figure}[htb]
-
-\begin{minipage}[b]{1.0\linewidth}
-  \centering
- \centerline{\epsfig{figure=figures/histogram_of_usgs_gages_by_order.jpg,width=8.5cm}}
-\end{minipage}
-
-\caption{Histogram of stream segments in National Hydrography Dataset Version 2 grouped by stream order and whether it has a United States Geological Survey stream gage or not. Considerable amount of lower order streams are ungaged.}
-\label{fig:histogram_gages}
-
+    \begin{minipage}[b]{.48\linewidth}
+        \centering
+        \centerline{\epsfig{figure=figures/validation_inundation.jpg,width=4.0cm}}
+        \centerline{(a)}\medskip
+    \end{minipage}
+    %
+    \hfill
+    %
+    \begin{minipage}[b]{0.48\linewidth}
+        \centering
+        \centerline{\epsfig{figure=figures/labeled_sar_scatter_plot.jpg,width=4.0cm}}
+        \centerline{(b)}\medskip
+    \end{minipage}
+    %
+    \caption{(a) Validation dataset furnished by United States Geological Survey of Goldsboro, North Carolina, United States during Hurricane Matthew flood of record in October 2016. (b) Sentinel-1 backscatter values of event with USGS labels}
+    %
+    \label{fig:validation_sar_labels}
+    %
 \end{figure}
-
-\subsection{Stage Extraction}
-\label{ssec:stage_extraction}
-
+%
+\subsection{Stage Extraction, Stage Filtering, and HAND Mapping}
+\label{ssec:stage_extraction_filter_mapping}
+%
 Height Above Nearest Drainage (HAND) is a measure of riverine drainage potentials via normalizing elevations to the nearest relevant drainage line \cite{renno2008hand,nobre2011height,nobre2016hand,aristizabal2020cahaba}. 
 Each pixel is assigned a relative elevation value and a catchment assignment referencing the river reach the pixel drains to.
 Utilizing the SAR FIM map, the maximum HAND value is extracted per catchment and assigned in equation \ref{eq:stage_extraction} 
-
+%
 \begin{equation}
 \label{eq:stage_extraction}
 \textbf{S} = max(\textbf{H} \cap \textbf{C}_i)
 \end{equation}
-
+%
 where S is a vector of stages, H is a vector of all the HAND values, C is a vector of all catchments, and i indexes the catchments.
 These stages are susceptible to considerable noise and demonstrate significant, irrational variations in the water surface profile. 
-
-\subsection{Stage Filtering}
-\label{ssec:stage_filtering}
 
 Graph signal processing (GSP) seeks to perform signal processing methods on signals with non-traditional graph structures \cite{gavili2017shift,defferrard2017pygsp,ortega2018graph,chen2014signal}. 
 Noisy river stages on networks are an application of GSP filtering due to the dendritic structure of river networks.
 The first eigenvalue of an A-B spline wavelet is employed as a low-pass filter to smooth and denoise the extracted stages \cite{defferrard2017pygsp}.
-
-\subsection{HAND Mapping}
-\label{ssec:hand_mapping}
-
+To define the structure of the graph, the weight matrix is simplified to an adjacency matrix of zeros and ones with the connectivity defined by the National Hydrography Dataset (NHD) \cite{usgs2019national}.
 The filtered stages are then remapped to inundation extents with the HAND method \cite{renno2008hand,nobre2011height,nobre2016hand,aristizabal2020cahaba}.   
-
+%
 \section{Results and Discussion}
 \label{sec:results_and_discussion}
-
-
-
-% Below is an example of how to insert images. Delete the ``\vspace'' line,
-% uncomment the preceding line ``\centerline...'' and replace ``imageX.ps''
-% with a suitable PostScript file name.
-%\begin{figure}[htb]
-
-%\begin{minipage}[b]{1.0\linewidth}
-%  \centering
-%% \centerline{\epsfig{figure=image1.ps,width=8.5cm}}
-%  \vspace{2.0cm}
-%  \centerline{(a) Result 1}\medskip
-%\end{minipage}
 %
-%\begin{minipage}[b]{.48\linewidth}
-%  \centering
-%% \centerline{\epsfig{figure=image3.ps,width=4.0cm}}
-%%  \vspace{1.5cm}
-%  \centerline{(b) Results 3}\medskip
-%\end{minipage}
-%\hfill
-%\begin{minipage}[b]{0.48\linewidth}
-%  \centering
-%% \centerline{\epsfig{figure=image4.ps,width=4.0cm}}
-%  \vspace{1.5cm}
-%  \centerline{(c) Result 4}\medskip
-%\end{minipage}
-%%
-%\caption{Example of placing a figure with experimental results.}
-%\label{fig:res}
-%%
-%\end{figure}
-
-
+Figure \ref{fig:contingency_maps} demonstrates the spatial distribution of the binary contingency metrics, true positive (TP), true negatives (TN), false positives (FP), and false negatives (FN).
+% 
+\begin{figure}[htb]
+    \begin{minipage}[b]{.48\linewidth}
+        \centering
+        \centerline{\epsfig{figure=figures/contingency_map_remoteSensing.jpg,width=4.0cm}}
+        \centerline{(a)}\medskip
+    \end{minipage}
+    %
+    \hfill
+    %
+    \begin{minipage}[b]{0.48\linewidth}
+        \centering
+        \centerline{\epsfig{figure=figures/contingency_map_filteredStages.jpg,width=4.0cm}}
+        \centerline{(b)}\medskip
+    \end{minipage}
+    %
+    \caption{Maps demonstrating the spatial distribution of binary contingency metrics for the SAR FIM cases (a) and the filtered stages case (b)}
+    %
+    \label{fig:contingency_maps}
+    %
+\end{figure}
+%
+In Figure \ref{fig:contingency_maps}a, the poor performance is realized as FNs mostly due to a significant amount inundated labels in the higher backscatter region of the spectrum seen in Figure \ref{fig:validation_sar_labels}.
+Figure \ref{fig:contingency_maps}b, shows significantly enhanced performance by reducing FPs and only marginally increasing FNs.
+The additional steps detailed in section \ref{ssec:stage_extraction_filter_mapping} are necessary because the two classes of interest lack sufficient separability as seen in Figure \ref{fig:validation_sar_labels}.
+To illustrate the effects of the graph signal filtering, Figure \ref{fig:flow_profile} demonstrates how a noisy SAR FIM flow profile can be smoothed utilizing the low-pass approach to remove extreme values and better agree with the validation flow profile.
+%
+\begin{figure}[htb]
+    %
+    \begin{minipage}[b]{1.0\linewidth}
+        \centering
+        \centerline{\epsfig{figure=figures/flow_profile_view_1.jpg,width=8.5cm}}
+    \end{minipage}
+    %
+    \caption{Example of flow profiles from the validation, SAR, and filtered FIMs. The SAR FIM exhibits large variations that are largely filtered and better matched to validation dataset.}
+    \label{fig:flow_profile}
+    %
+\end{figure}
+%
 \section{Conclusions}
-Conclusions
 \label{sec:conclusions}
-
-%\subsection{Subheadings}
-%\label{ssec:subhead}
-
-%Subheadings should appear in lower case (initial word capitalized) in
-%boldface.  They should start at the left margin on a separate line.
- 
-%\subsubsection{Sub-subheadings}
-%\label{sssec:subsubhead}
-
-%Sub-subheadings, as in this paragraph, are discouraged. However, if you
-%must use them, they should appear in lower case (initial word
-%capitalized) and start at the left margin on a separate line, with paragraph
-%text beginning on the following line.  They should be in italics.
-
+%
+A four step procedure was proposed to enhance the applicability of synthetic aperture radar (SAR) for riverine inundation mapping especially in areas with high radiometric scattering and interference that greatly improves the skill of remote sensing based inundation mapping when compared to a segmented SAR image.
+Dual-polarized SAR was segmented using Gaussian mixture models and river stages were extracted using the Height Above Nearest Drainage Model. 
+The extracted stages were denoised using graph signal filtering leveraging the graph nature of river networks and remapped to inundation extents using the HAND method.
+This procedure significantly improved the f1-score and Matthew's correlation coefficient measures by enhancing the recall and slightly sacrificing precision via a marginal increase in false positives.
+Overall, stages were increased with many zero stage catchments being filtered out to reflect the local window of stages. 
+We recommend this procedure receive further testing in larger areas with additional validation datasets to best prove its efficacy and utility in developing remote sensing based fluvial inundation maps
+%
 % -------------------------------------------------------------------------
 % To start a new column (but not a new page) and help balance the last-page
 % column length use \vfill\pagebreak.
 % -------------------------------------------------------------------------
-\vfill
-\pagebreak
+%\vfill
+%\pagebreak
 
-% References should be produced using the bibtex program from suitable
-% BiBTeX files (here: strings, refs, manuals). The IEEEbib.bst bibliography
-% style file from IEEE produces unsorted bibliography list.
+% References
 % -------------------------------------------------------------------------
 \bibliographystyle{style/IEEEbib}
 \bibliography{bib/refs}
-
+%
 \end{document}
