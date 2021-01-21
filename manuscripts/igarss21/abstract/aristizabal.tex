@@ -58,25 +58,16 @@ flood inundation mapping, remote sensing, synthetic aperture radar, unsupervised
 \label{sec:intro}
 
 Floods represent one of the most significant natural disasters \cite{national_weather_service_2020,national_weather_service_2019,national_weather_service_2018,us_department_of_commerce_2020} with trends indicating that impacts will only continue to increase in the future \cite{mallakpour2015changing,downton2005reanalysis,kunkel1999temporal,pielke2000precipitation,corringham2019effect,tabari2020climate,milly2002increasing,wing2018estimates}. 
-While the United States Geological Survey (USGS) operates a network of thousands stream gages across the United States, it still leaves considerable amount of data scarcity particularly along lower order streams as illustrated in Figure \ref{fig:histogram_gages} which compares the distribution of stream orders for gaged and ungaged stream reaches within the National Hydrography Dataset (NHD) Version 2.
+Modern river gage networks like those furnished by the United States Geological Survey (USGS) provide significant utility in the monitoring of river states but still leave considerable amount of data scarcity in terms of spatial sparsity and the lack of observed inundation extents. 
 Having more and improved data via remote sensing related to river discharge, stage, and inundation extents could provide key stakeholders with more robust means of forecasting, preparing for, and responding to floods in data scare regions around the world.
 
 A variety of satellite based sensors have been used in the detection of surface water including multi-spectral \cite{nigro2014nasa,sanyal2004application,wang2004using,brakenridge2006modis,jain2005delineation,nghiem2000flood,hussain2011mapping,frazier2000water,dewan2006flood,brivio2002integration}, microwave \cite{de2015global,schumann2015microwave,de2010flood,bindlish2008role,de2009global,kundu2015flood}, and synthetic aperture radar (SAR) \cite{aristizabal2020high,shastry2019using,martinis2010automatic,kudahetty2012flood,schlaffer2015flood,chini2019sentinel,chaabani2018flood,huang2018automated,saatchi2019sar,kasischke2003effects,hess2003dual}.
 While SAR does have its own inherent limitations such as terrain distortions and interference with vegetation and anthropogenic features, it boasts a significant number of strengths when compared to other sensors for detection of riverine surface water including high spatial resolution, self-illumination, and low atmospheric attenuation \cite{saatchi2019sar,muckenhuber2016open}.
 To counter limitations associated with vegetative and anthropogenic interference, researchers have employed terrain information in the form of digital elevation models (DEM) and detrended DEMs \cite{townsend1998modeling,aristizabal2020high,shastry2019using,saatchi2019sar,twele2016sentinel,huang2017comparison}.
-These methods fall short of providing
+These methods fall short of providing comprehensive solutions to operational inundation mapping with remote sensing in challenging environments.
 
-\begin{figure}[htb]
+Here we propose the utilization of unsupervised learning to generate segmented images that will be used for river stage (depth) extraction. These stages are further filtered
 
-\begin{minipage}[b]{1.0\linewidth}
-  \centering
- \centerline{\epsfig{figure=figures/histogram_of_usgs_gages_by_order.jpg,width=8.5cm}}
-\end{minipage}
-
-\caption{Histogram of stream segments in National Hydrography Dataset Version 2 grouped by stream order and whether it has a United States Geological Survey stream gage or not. Considerable amount of lower order streams are ungaged.}
-\label{fig:histogram_gages}
-
-\end{figure}
 
 \section{Materials and Methods}
 \label{sec:materials_and_methods}
@@ -84,7 +75,7 @@ These methods fall short of providing
 The proposed procedure leverages a four step process to counter some of the limitations of SAR based flood inundation mapping (FIM) including errors of omission from vegetation and anthropogenic feature interference and errors of commission including anthropogenic features that cause specular reflections or multi-bounces such as roads or dense buildings.
 The first step performs image segmentation on the SAR imagery parameterizing two modes within the data via unsupervised learning.
 The following step involves invoking the HAND method to determine the corresponding stage from segmented imagery assuming the mode with the lower backscatter as the inundated class.
-The third step takes this noisy water surface plane sampled from the segmented image and HAND data and seeks to smooth the surface via a low-pass graph signal filter utilizing the connectivity defined by the NHD Version 2.
+The third step takes this noisy water surface plane sampled from the segmented image and HAND data and seeks to smooth the surface via a low-pass graph signal filter utilizing the connectivity defined by the National Hydrography Dataset Version 2.
 In closing, these filtered stages are then remapped to inundation extents via the HAND method.
 
 A graphical representation of this procedure is demonstrated in Figure \ref{fig:process_flowchart}.
@@ -119,10 +110,22 @@ Our EM initializes the parameters with those from K-means clusters then uses the
 Repeating the process until the log-likelihood of the Gaussian Mixtures converges within some finite tolerance effectively maximizes the local likelihood \cite{barazandeh2018behavior,dempster1977maximum}.
 The learned parameters are then used to classify the SAR backscatter values into two distinct classes where the class with lower backscatter intensities tentatively defining the inundated class in the SAR FIM.
 
+\begin{figure}[htb]
+
+\begin{minipage}[b]{1.0\linewidth}
+  \centering
+ \centerline{\epsfig{figure=figures/histogram_of_usgs_gages_by_order.jpg,width=8.5cm}}
+\end{minipage}
+
+\caption{Histogram of stream segments in National Hydrography Dataset Version 2 grouped by stream order and whether it has a United States Geological Survey stream gage or not. Considerable amount of lower order streams are ungaged.}
+\label{fig:histogram_gages}
+
+\end{figure}
+
 \subsection{Stage Extraction}
 \label{ssec:stage_extraction}
 
-Height Above Nearest Drainage (HAND) is a measure of riverine drainage potentials via normalizing elevations to the nearest relevant drainage line \cite{renno2008hand,nobre2011height,nobre2016hand}. 
+Height Above Nearest Drainage (HAND) is a measure of riverine drainage potentials via normalizing elevations to the nearest relevant drainage line \cite{renno2008hand,nobre2011height,nobre2016hand,aristizabal2020cahaba}. 
 Each pixel is assigned a relative elevation value and a catchment assignment referencing the river reach the pixel drains to.
 Utilizing the SAR FIM map, the maximum HAND value is extracted per catchment and assigned in equation \ref{eq:stage_extraction} 
 
@@ -144,12 +147,12 @@ The first eigenvalue of an A-B spline wavelet is employed as a low-pass filter t
 \subsection{HAND Mapping}
 \label{ssec:hand_mapping}
 
-The filtered stages are then remapped to inundation extents with the HAND method \cite{renno2008hand,nobre2011height,nobre2016hand}.   
+The filtered stages are then remapped to inundation extents with the HAND method \cite{renno2008hand,nobre2011height,nobre2016hand,aristizabal2020cahaba}.   
 
 \section{Results and Discussion}
 \label{sec:results_and_discussion}
 
-Results and Discussion
+
 
 % Below is an example of how to insert images. Delete the ``\vspace'' line,
 % uncomment the preceding line ``\centerline...'' and replace ``imageX.ps''
