@@ -48,7 +48,7 @@
 \maketitle
 %
 \begin{abstract}
-Remote sensing based river extent mapping can be used for detecting flooding or blue sky inundation extents in retrospective and near-realtime applications.
+Remote sensing based river extent mapping can be used for detecting inundation extents in retrospective and near-realtime applications.
 Synthetic aperture radar (SAR) has been proven useful for this purpose due to its high-spatial resolution, low atmospheric attenuation, and self-illumination but suffers from radiometric scattering and unwanted reflections from vegetation, terrain, and anthropogenic features. 
 A novel four step procedure is proposed that augments a standard unsupervised classification of the SAR backscatter values with a terrain index to extract stages. 
 The extracted stages are filtered, exploiting the dendritic nature of river networks, utilizing graph signal processing then remapping the filtered stages using the hydrologically relevant terrain model. 
@@ -62,16 +62,11 @@ flood inundation mapping, remote sensing, synthetic aperture radar, unsupervised
 \section{Introduction}
 \label{sec:intro}
 %
-Floods represent one of the most significant natural disasters \cite{national_weather_service_2020,national_weather_service_2019,national_weather_service_2018,us_department_of_commerce_2020} with trends indicating that impacts will only continue to increase in the future \cite{mallakpour2015changing,downton2005reanalysis,kunkel1999temporal,pielke2000precipitation,corringham2019effect,tabari2020climate,milly2002increasing,wing2018estimates}. 
-Modern river gage networks like those furnished by the United States Geological Survey (USGS) provide significant utility in the monitoring of river states but still leave considerable amount of data scarcity in terms of spatial sparsity and the lack of observed inundation extents. 
-Having more and improved data via remote sensing related to river discharge, stage, and inundation extents could provide key stakeholders with more robust means of forecasting, preparing for, and responding to floods in data scare regions around the world.
-
-A variety of satellite based sensors have been used in the detection of surface water including multi-spectral \cite{nigro2014nasa,sanyal2004application,wang2004using,brakenridge2006modis,jain2005delineation,nghiem2000flood,hussain2011mapping,frazier2000water,dewan2006flood,brivio2002integration}, microwave \cite{de2015global,schumann2015microwave,de2010flood,bindlish2008role,de2009global,kundu2015flood}, and synthetic aperture radar (SAR) \cite{aristizabal2020high,shastry2019using,martinis2010automatic,kudahetty2012flood,schlaffer2015flood,chini2019sentinel,chaabani2018flood,huang2018automated,saatchi2019sar,kasischke2003effects,hess2003dual}.
-While SAR does have its own inherent limitations such as terrain distortions and interference with vegetation and anthropogenic features, it boasts a significant number of strengths when compared to other sensors for detection of riverine surface water including high spatial resolution, self-illumination, and low atmospheric attenuation \cite{saatchi2019sar,muckenhuber2016open}.
-To counter limitations associated with vegetative and anthropogenic interference, researchers have employed terrain information in the form of digital elevation models (DEM) and detrended DEMs \cite{townsend1998modeling,aristizabal2020high,shastry2019using,saatchi2019sar,twele2016sentinel,huang2017comparison}.
+Remote sensing of fluvial inundation extents provide key stakeholders with more robust means of forecasting, preparing for, and responding to floods in data sparse regions.
+Synthetic Aperture Radar (SAR) has been used extensively for mapping of inundation extents \cite{aristizabal2020high,shastry2019using,landuyt2018flood,giustarini2016probabilistic,mason2012near,hess1995delineation,santoro2013multi,saatchi2019sar} due to its strengths when compared to other sensors including high spatial resolution, self-illumination, and low atmospheric attenuation \cite{saatchi2019sar}.
+To counter SAR's inherent limitations such as terrain distortions and interference with vegetation, terrain, or anthropogenic features, researchers have employed terrain information in the form of digital elevation models (DEM) and detrended DEMs \cite{aristizabal2020high,shastry2019using,saatchi2019sar,twele2016sentinel,huang2017comparison}.
 These methods fall short of providing comprehensive solutions to operational inundation mapping with remote sensing in challenging environments.
-
-Here we propose the utilization of unsupervised learning to generate segmented images that will be used for river stage (depth) extraction. 
+Here we propose a method for riverine inundation mapping for use in operational settings utilizing unsupervised learning to generate segmented images that will be used for river stage (depth) extraction. 
 These stages are further filtered with graph signal filtering and remapped utilizing a terrain model.
 %
 \section{Materials and Methods}
@@ -95,9 +90,9 @@ A graphical representation of this procedure is demonstrated in Figure \ref{fig:
 \subsection{Validation}
 \label{ssec:validation}
 %
-The USGS published flood inundation extents for a flood of record taking place during the Hurricane Matthew event on October 2016 in North Carolina, United States. 
+The United States Geological Survey (USGS) published flood inundation extents for a flood of record taking place during the Hurricane Matthew event on October 2016 in North Carolina, United States. 
 In the city of Goldsboro, a water surface manifold created from surveyed high-water marks was intersected with high resolution Lidar-based DEMs to create a local flood inundation map (FIM) as seen in Figure \ref{fig:validation_sar_labels} \cite{musser2017characterization}.
-The map for this event was selected as validation for our proposed approach while common binary classification statistics such as precision, recall, f1-score, and Matthew's correlation coefficient (MCC) were employed to compare the binary predicted and reference maps \cite{canbek2017binary,chicco2020advantages,matthews1975comparison,baldi2000assessing}.
+The map for this event was selected as validation for our proposed approach while common binary classification statistics such as precision, recall, f1-score, and Matthew's correlation coefficient (MCC) were employed to compare the binary predicted and reference maps \cite{canbek2017binary,matthews1975comparison}.
 %
 \subsection{Image Segmentation}
 \label{ssec:image_segmentation}
@@ -134,23 +129,30 @@ The learned parameters are then used to classify the SAR backscatter values into
 \subsection{Stage Extraction, Stage Filtering, and HAND Mapping}
 \label{ssec:stage_extraction_filter_mapping}
 %
-Height Above Nearest Drainage (HAND) is a measure of riverine drainage potentials via normalizing elevations to the nearest relevant drainage line \cite{renno2008hand,nobre2011height,nobre2016hand,aristizabal2020cahaba}. 
+Height Above Nearest Drainage (HAND) is a measure of riverine drainage potentials via normalizing elevations to the nearest relevant drainage line \cite{nobre2016hand,aristizabal2020cahaba}. 
 Each pixel is assigned a relative elevation value and a catchment assignment referencing the river reach the pixel drains to.
-Utilizing the SAR FIM map, the maximum HAND value is extracted per catchment and assigned in equation \ref{eq:stage_extraction} 
+Utilizing the SAR FIM map, the maximum HAND value is extracted per catchment and assigned in equation \ref{eq:stage_extraction_1} 
 %
 \begin{equation}
-\label{eq:stage_extraction}
-\textbf{S} = max(\textbf{H} \cap \textbf{C}_i)
+\label{eq:stage_extraction_1}
+S = \bigcup_{j \in J} max(\bigcup_{i \in I} H_{i \cap N_j})
 \end{equation}
 %
-where S is a vector of stages, H is a vector of all the HAND values, C is a vector of all catchments, and i indexes the catchments.
+where S is the set of stages indexed by the index set J, C is a set of catchment identifiers indexed by J, and H is a set of HAND values indexed by the index set I.
+N is defined as a collection indexed by J in which every element is a set of the indices corresponding to catchment j such defined in equation \ref{eq:stage_extraction_2}.
+%
+\begin{equation}
+\label{eq:stage_extraction_2}
+N = \{\{ i \mid C_i=C_j \land i \in I \} j \in J \}
+\end{equation}
+%
 These stages are susceptible to considerable noise and demonstrate significant, irrational variations in the water surface profile. 
 
-Graph signal processing (GSP) seeks to perform signal processing methods on signals with non-traditional graph structures \cite{gavili2017shift,defferrard2017pygsp,ortega2018graph,chen2014signal}. 
+Graph signal processing (GSP) seeks to perform signal processing methods on signals with non-traditional graph structures \cite{gavili2017shift,defferrard2017pygsp,ortega2018graph}. 
 Noisy river stages on networks are an application of GSP filtering due to the dendritic structure of river networks.
 The first eigenvalue of an A-B spline wavelet is employed as a low-pass filter to smooth and denoise the extracted stages \cite{defferrard2017pygsp}.
 To define the structure of the graph, the weight matrix is simplified to an adjacency matrix of zeros and ones with the connectivity defined by the National Hydrography Dataset (NHD) \cite{usgs2019national}.
-The filtered stages are then remapped to inundation extents with the HAND method \cite{renno2008hand,nobre2011height,nobre2016hand,aristizabal2020cahaba}.   
+The filtered stages are then remapped to inundation extents with the HAND method \cite{nobre2016hand,aristizabal2020cahaba}.   
 %
 \section{Results and Discussion}
 \label{sec:results_and_discussion}
