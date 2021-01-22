@@ -195,6 +195,24 @@ To illustrate the effects of the graph signal filtering, Figure \ref{fig:flow_pr
     %
 \end{figure}
 %
+\begin{table}[htb]
+    \caption{Binary classification metrics of flood inundation maps from segmented synthetic aperture radar and with proposed graph signal filtering approach. All values in percentages.}
+    \label{tbl:metric_results}
+    %\centering
+    \begin{center}
+    \begin{tabular}{ |c|c|c|c|c| }
+        \hline
+             \textbf{Model/Metric} & \textbf{Recall} & \textbf{Precision} & \textbf{F1-Score} &\textbf{MCC} \\
+            \hline
+            \textbf{SAR FIM} & 28.2 & 96.5 & 43.7 & 23.0  \\
+            \hline
+            \textbf{Filtered FIM} & 98.1 & 89.6  & 93.6 & 63.7\\
+
+         \hline
+    \end{tabular}
+    \end{center}
+\end{table}
+%
 \section{Conclusions}
 \label{sec:conclusions}
 %
