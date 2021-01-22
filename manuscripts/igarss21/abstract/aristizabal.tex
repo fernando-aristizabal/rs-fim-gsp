@@ -66,13 +66,13 @@ Remote sensing of fluvial inundation extents provide key stakeholders with more 
 Synthetic Aperture Radar (SAR) has been used extensively for mapping of inundation extents \cite{aristizabal2020high,shastry2019using,landuyt2018flood,giustarini2016probabilistic,mason2012near,hess1995delineation,santoro2013multi,saatchi2019sar} due to its strengths when compared to other sensors including high spatial resolution, self-illumination, and low atmospheric attenuation \cite{saatchi2019sar}.
 To counter SAR's inherent limitations such as terrain distortions and interference with vegetation, terrain, or anthropogenic features, researchers have employed terrain information in the form of digital elevation models (DEM) and detrended DEMs \cite{aristizabal2020high,shastry2019using,saatchi2019sar,twele2016sentinel,huang2017comparison}.
 These methods fall short of providing comprehensive solutions to operational inundation mapping with remote sensing in challenging environments.
-Here we propose a method for riverine inundation mapping for use in operational settings utilizing unsupervised learning to generate segmented images that will be used for river stage (depth) extraction. 
+Here, we propose a method for riverine inundation mapping for use in operational settings utilizing unsupervised learning to generate segmented images that will be used for river stage (depth) extraction. 
 These stages are further filtered with graph signal filtering and remapped utilizing a terrain model.
 %
 \section{Materials and Methods}
 \label{sec:materials_and_methods}
 %
-The proposed procedure leverages a four step process to counter some of the limitations of SAR based flood inundation mapping (FIM) including errors of omission from vegetation and anthropogenic feature interference and errors of commission including anthropogenic features that cause specular reflections or multi-bounces such as roads or dense buildings.
+The proposed procedure leverages a four step process to counter some of the limitations of SAR based flood inundation mapping (FIM) including errors of omission from vegetation and anthropogenic feature interference and errors of commission from anthropogenic features that cause specular reflections or multi-bounces such as roads or dense buildings.
 A graphical representation of this procedure is demonstrated in Figure \ref{fig:process_flowchart} and elaborated on in sections \ref{ssec:image_segmentation}-\ref{ssec:stage_extraction_filter_mapping}.
 %
 \begin{figure}[htb]
