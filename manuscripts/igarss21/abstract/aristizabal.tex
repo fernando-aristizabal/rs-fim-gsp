@@ -62,9 +62,9 @@ flood inundation mapping, remote sensing, synthetic aperture radar, unsupervised
 \section{Introduction}
 \label{sec:intro}
 %
-Remote sensing of fluvial inundation extents provide key stakeholders with more robust means of forecasting, preparing for, and responding to floods in data sparse regions.
-Synthetic Aperture Radar (SAR) has been used extensively for mapping of inundation extents \cite{aristizabal2020high,shastry2019using,landuyt2018flood,giustarini2016probabilistic,mason2012near,hess1995delineation,santoro2013multi,saatchi2019sar} due to its strengths when compared to other sensors including high spatial resolution, self-illumination, and low atmospheric attenuation \cite{saatchi2019sar}.
-To counter SAR's inherent limitations such as terrain distortions and interference with vegetation, terrain, or anthropogenic features, researchers have employed terrain information in the form of digital elevation models (DEM) and detrended DEMs \cite{aristizabal2020high,shastry2019using,saatchi2019sar,twele2016sentinel,huang2017comparison}.
+Remote sensing observation of fluvial inundation extents provides key stakeholders with more robust means of forecasting, preparing for, and responding to floods in data sparse regions.
+Synthetic Aperture Radar (SAR) has been used extensively for mapping of inundation extents \cite{aristizabal2020high,shastry2019using,landuyt2018flood,mason2012near,hess1995delineation,santoro2013multi,saatchi2019sar} due to its strengths when compared to other sensors including high spatial resolution, self-illumination, and low atmospheric attenuation \cite{saatchi2019sar}.
+To counter SAR's inherent limitations such as terrain distortions and interference with vegetation or anthropogenic features, researchers have employed terrain information in the form of digital elevation models (DEM) and detrended DEMs \cite{aristizabal2020high,shastry2019using,saatchi2019sar,twele2016sentinel,huang2017comparison}.
 These methods fall short of providing comprehensive solutions to operational inundation mapping with remote sensing in challenging environments.
 Here, we propose a method for riverine inundation mapping for use in operational settings utilizing unsupervised learning to generate segmented images that will be used for river stage (depth) extraction. 
 These stages are further filtered with graph signal filtering and remapped utilizing a terrain model.
@@ -97,7 +97,7 @@ The map for this event was selected as validation for our proposed approach whil
 \subsection{Image Segmentation}
 \label{ssec:image_segmentation}
 %
-Sentinel-1 C-Band SAR data, captured on October 12, 2016, is used in the interferometric wide mode offering vertical-vertical (VV) and vertical-horizontal (VH) polarizations \cite{copernicus2016sentinel} \footnote{S1A\_IW\_GRDH\_1SDV\_20161012T111514 \_20161012T111543\_013456\_01580C\_1783\.SAFE}. 
+Sentinel-1 C-Band SAR data\footnote{S1A\_IW\_GRDH\_1SDV\_20161012T111514 \_20161012T111543\_013456\_01580C\_1783\.SAFE}, captured on October 12, 2016, is used in the interferometric wide mode offering vertical-vertical (VV) and vertical-horizontal (VH) polarizations \cite{copernicus2016sentinel}. 
 The SAR product in the two polarizations were calibrated and filtered to remove speckle noise prior to segmentation \cite{zuhlke2015snap,yommy2015sar} with a scatter plot of values in Figure \ref{fig:validation_sar_labels}b. 
 Due to SAR's bi-modal distribution, the image is initially segmented via Gaussian Mixture Models (GMM) which assumes there are two components of data each parameterized as Gaussian densities \cite{reynolds2009gaussian,mclachlan2004finite}.
 The GMM parameter set comprised of the mean vector, weight vector, and covariance matrix, are learned with the Expectation-Maximization (EM) algorithm. 
@@ -131,21 +131,22 @@ The learned parameters are then used to classify the SAR backscatter values into
 %
 Height Above Nearest Drainage (HAND) is a measure of riverine drainage potentials via normalizing elevations to the nearest relevant drainage line \cite{nobre2016hand,aristizabal2020cahaba}. 
 Each pixel is assigned a relative elevation value and a catchment assignment referencing the river reach the pixel drains to.
-Utilizing the SAR FIM map, the maximum HAND value is extracted per catchment and assigned in equation \ref{eq:stage_extraction_1} 
+Utilizing the SAR FIM map, the maximum inundated HAND value is extracted per catchment and assigned per equation \ref{eq:stage_extraction_1},
 %
 \begin{equation}
 \label{eq:stage_extraction_1}
-S = \bigcup_{j \in J} max(\bigcup_{i \in I} H_{i \cap N_j})
+S = \bigcup_{j \in J} max(\bigcup_{i \in I} H_{i \cap N_j}),
 \end{equation}
 %
 where S is the set of stages indexed by the index set J, C is a set of catchment identifiers indexed by J, and H is a set of HAND values indexed by the index set I.
-N is defined as a collection indexed by J in which every element is a set of the indices corresponding to catchment j such defined in equation \ref{eq:stage_extraction_2}.
+N is defined as a collection indexed by J in which every element is a set of the inundated indices corresponding to catchment j such defined in equation \ref{eq:stage_extraction_2}:
 %
 \begin{equation}
 \label{eq:stage_extraction_2}
-N = \{\{ i \mid C_i=C_j \land i \in I \} \mid j \in J \}
+N = \{\{ i \mid C_i=C_j \land i \cap W  \land i \in I \} \mid j \in J \}.
 \end{equation}
 %
+Above, W is the subset of I that correspond to inundated pixels.
 These stages are susceptible to considerable noise and demonstrate significant, irrational variations in the water surface profile. 
 
 Graph signal processing (GSP) seeks to perform signal processing methods on signals with non-traditional graph structures \cite{gavili2017shift,defferrard2017pygsp,ortega2018graph}. 
@@ -157,7 +158,7 @@ The filtered stages are then remapped to inundation extents with the HAND method
 \section{Results and Discussion}
 \label{sec:results_and_discussion}
 %
-Figure \ref{fig:contingency_maps} demonstrates the spatial distribution of the binary contingency metrics, true positive (TP), true negatives (TN), false positives (FP), and false negatives (FN).
+Figure \ref{fig:contingency_maps} demonstrates the spatial distribution of the binary contingency metrics, true positives (TP), true negatives (TN), false positives (FP), and false negatives (FN).
 % 
 \begin{figure}[htb]
     \begin{minipage}[b]{.48\linewidth}
@@ -180,7 +181,7 @@ Figure \ref{fig:contingency_maps} demonstrates the spatial distribution of the b
     %
 \end{figure}
 %
-In Figure \ref{fig:contingency_maps}a, the poor performance is realized as FNs mostly due to a significant amount inundated labels in the higher backscatter region of the spectrum seen in Figure \ref{fig:validation_sar_labels}.
+In Figure \ref{fig:contingency_maps}a, the poor performance is realized as FNs mostly due to a significant amount of inundated benchmark labels in the higher backscatter region of the spectrum seen in Figure \ref{fig:validation_sar_labels}.
 Figure \ref{fig:contingency_maps}b, shows significantly enhanced performance by reducing FPs and only marginally increasing FNs.
 The additional steps detailed in section \ref{ssec:stage_extraction_filter_mapping} are necessary because the two classes of interest lack sufficient separability as seen in Figure \ref{fig:validation_sar_labels}.
 To illustrate the effects of the graph signal filtering, Figure \ref{fig:flow_profile} demonstrates how a noisy SAR FIM flow profile can be smoothed utilizing the low-pass approach to remove extreme values and better agree with the validation flow profile.
@@ -223,7 +224,7 @@ Dual-polarized SAR was segmented using Gaussian mixture models and river stages 
 The extracted stages were denoised using graph signal filtering leveraging the graph nature of river networks and remapped to inundation extents using the HAND method.
 This procedure significantly improved the f1-score and Matthew's correlation coefficient measures by enhancing the recall and slightly sacrificing precision via a marginal increase in false positives.
 Overall, stages were increased with many zero stage catchments being filtered out to reflect the local window of stages. 
-We recommend this procedure receive further testing in larger areas with additional validation datasets to best prove its efficacy and utility in developing remote sensing based fluvial inundation maps
+We recommend this procedure receive further testing in larger areas with additional validation datasets to best prove its efficacy and utility in developing remote sensing based fluvial inundation maps.
 %
 % -------------------------------------------------------------------------
 % To start a new column (but not a new page) and help balance the last-page
