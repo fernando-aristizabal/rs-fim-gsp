@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from functions.raster import Raster
+from src.raster import Raster
 import geopandas as gpd
 from tqdm import tqdm
 

@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from functions.raster import Raster
+from src.raster import Raster
 import geopandas as gpd
 from pygsp import graphs, filters
 from os.path import isfile
 
-__filter_dictionary = { 'abspline' : filters.Abspline }
+__filter_dictionary = { 'Abspline' : filters.Abspline , 'Itersine' : filters.Itersine, 'MexicanHat' : filters.MexicanHat }
 
 def GraphFilterStages(streamNetwork,extractedStages_columnName,filteredStages_columnName,filterName='abspline',
                                           filterParameters = {'Nf': 1},streamNetwork_vaa_fileName=None,weightMatrix_fileName=None,useWeights=False,verbose=False):
@@ -91,6 +91,6 @@ def GraphFilterStages(streamNetwork,extractedStages_columnName,filteredStages_co
         # filteredSignal = filteredSignal[:,:].sum(axis=1)
 
     # add filtered
-    streamNetwork[filteredStages_columnName] = filteredSignal
+    streamNetwork.loc[:,filteredStages_columnName] = filteredSignal
 
     return(streamNetwork)

@@ -1,0 +1,34 @@
+## Temporary image to build the libraries and only save the needed artifacts
+FROM osgeo/gdal:ubuntu-full-3.1.2
+ARG dataDir=/data
+ARG projectDir=/rs-fim-gsp
+ENV DEBIAN_FRONTEND noninteractive
+
+## ADDING FIM GROUP ##
+# ARG GroupID=1370800120
+# ARG GroupName=apd_dev
+ARG GroupID=1370800235
+ARG GroupName=fim
+RUN addgroup --gid $GroupID $GroupName
+ENV GID=$GroupID
+ENV GN=$GroupName
+
+
+RUN apt update --fix-missing
+RUN apt install -y p7zip-full python3-pip time mpich=3.3.2-2build1 parallel=20161222-1.1 libgeos-dev=3.8.0-1build1 expect=5.45.4-2build1
+RUN apt auto-remove
+
+## adding environment variables for numba and python ##
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+ENV PYTHONUNBUFFERED=TRUE
+
+## ADD TO PATHS ##
+ENV PATH="$projectDir:${PATH}"
+
+## install python 3 modules ##
+RUN pip3 install geopandas pandas numpy scipy gdal tqdm pygsp numba 
+
+## RUN UMASK TO CHANGE DEFAULT PERMISSIONS ##
+ADD ./entrypoint.sh /
+ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
