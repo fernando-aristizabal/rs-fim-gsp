@@ -27,8 +27,8 @@ ENV PYTHONUNBUFFERED=TRUE
 ENV PATH="$projectDir:${PATH}"
 
 ## install python 3 modules ##
-RUN pip3 install geopandas pandas numpy scipy gdal tqdm pygsp numba 
+RUN pip3 install geopandas pandas numpy scipy gdal tqdm pygsp numba matplotlib
 
 ## RUN UMASK TO CHANGE DEFAULT PERMISSIONS ##
-ADD ./entrypoint.sh /
+ADD ./docker/entrypoint.sh /
 ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
